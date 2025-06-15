@@ -1,0 +1,8 @@
+1. Pristup web servisu (80/443) na www iz Interneta i lokalne mreže
+
+# Iz client (Internet)
+sudo himage client curl http://192.0.2.10 -- RADI
+sudo himage client curl https://192.0.2.10 -- NE RADI, failed to connect to . port 443 after 1ms couldnt connect to server
+
+# Iz pc (lokalna mreža)
+sudo himage pc curl http://192.0.2.10 -- RADI
