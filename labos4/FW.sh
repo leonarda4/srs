@@ -5,7 +5,7 @@
 #
 IPT=/sbin/iptables
 
-$IPT -P INPUT DROP
+$IPT -P INPUT  DROP
 $IPT -P OUTPUT DROP
 $IPT -P FORWARD DROP
 
@@ -49,7 +49,7 @@ FW_IP=10.0.0.1
 # pristupiti s bilo koje adrese (iz Interneta i iz lokalne mreže), ...
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A FORWARD -p tcp -d $WWW --dport 80 -j ACCEPT
+$IPT -A FORWARD -p tcp -d $WWW --dport 80  -j ACCEPT
 $IPT -A FORWARD -p tcp -d $WWW --dport 443 -j ACCEPT
 
 #
@@ -57,8 +57,13 @@ $IPT -A FORWARD -p tcp -d $WWW --dport 443 -j ACCEPT
 # pristupiti s bilo koje adrese (iz Interneta i iz lokalne mreže), ...
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A FORWARD -p tcp -d $DNS --dport 53 -j ACCEPT
 $IPT -A FORWARD -p udp -d $DNS --dport 53 -j ACCEPT
+$IPT -A FORWARD -p tcp -d $DNS --dport 53 -j ACCEPT
+
+#  DNS poslužitelj u DMZ-u smije sam slati upite prema vanjskim DNS-ovima
+$IPT -A FORWARD -s $DNS -p udp --dport 53 -j ACCEPT
+$IPT -A FORWARD -s $DNS -p tcp --dport 53 -j ACCEPT
+$IPT -A FORWARD -s $DNS -j DROP          # ...a sve ostalo mu je zabranjeno
 
 #
 # ... a SSH poslužiteljima na www i dns samo s admin iz lokalne mreže "Private"
@@ -94,15 +99,15 @@ $IPT -A FORWARD -d 192.0.2.0/24 -j DROP
 # dozvoljen je samo racunalima iz mreže "Private".
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A FORWARD -p tcp -d $DATABASE --dport 22 -s $PRIVATE_NET -j ACCEPT
+$IPT -A FORWARD -p tcp -s $PRIVATE_NET -d $DATABASE --dport 22 -j ACCEPT
 
 #
 # Web poslužitelju na cvoru database, koji sluša na TCP portu 10000, može se pristupiti
 # iskljucivo s racunala www koje se nalazi u DMZ (i s racunala iz mreže "Private").
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A FORWARD -p tcp -d $DATABASE --dport 10000 -s $WWW -j ACCEPT
-$IPT -A FORWARD -p tcp -d $DATABASE --dport 10000 -s $PRIVATE_NET -j ACCEPT
+$IPT -A FORWARD -p tcp -s $WWW         -d $DATABASE --dport 10000 -j ACCEPT
+$IPT -A FORWARD -p tcp -s $PRIVATE_NET -d $DATABASE --dport 10000 -j ACCEPT
 
 #
 # S racunala database je zabranjen pristup svim uslugama u Internetu i u DMZ.
@@ -120,24 +125,17 @@ $IPT -A FORWARD -s $DATABASE -j DROP
 # u Internetu ali samo korištenjem protokola HTTP (tcp/80 i tcp/443) i DNS (udp/53 i tcp/53).
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A FORWARD -s $DATABASE -p tcp --dport 80 -j DROP
-$IPT -A FORWARD -s $DATABASE -p tcp --dport 443 -j DROP
-$IPT -A FORWARD -s $DATABASE -p udp --dport 53 -j DROP
-$IPT -A FORWARD -s $DATABASE -p tcp --dport 53 -j DROP
-
-$IPT -A FORWARD -s $PRIVATE_NET -p tcp --dport 80 -j ACCEPT
-$IPT -A FORWARD -s $PRIVATE_NET -p tcp --dport 443 -j ACCEPT
-$IPT -A FORWARD -s $PRIVATE_NET -p udp --dport 53 -j ACCEPT
-$IPT -A FORWARD -s $PRIVATE_NET -p tcp --dport 53 -j ACCEPT
-
+$IPT -A FORWARD -p tcp -s $PRIVATE_NET --dport 80  -j ACCEPT
+$IPT -A FORWARD -p tcp -s $PRIVATE_NET --dport 443 -j ACCEPT
+$IPT -A FORWARD -p udp -s $PRIVATE_NET --dport 53 -j ACCEPT
+$IPT -A FORWARD -p tcp -s $PRIVATE_NET --dport 53 -j ACCEPT
+# (posebni DROP-ovi za database→80/443/53 više nisu potrebni – database je već blokiran)
 
 # Za potrebe administriranja, s admin se može pristupiti SSH poslužitljima na www i dns.
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A INPUT -p tcp -s $ADMIN_IP --dport 22 -j ACCEPT
-$IPT -A FORWARD -p tcp -s $ADMIN_IP -d $WWW --dport 22 -j ACCEPT
-$IPT -A FORWARD -p tcp -s $ADMIN_IP -d $DNS --dport 22 -j ACCEPT
-$IPT -A INPUT -p tcp -s $ADMIN_IP -d $FW_IP --dport 22 -j ACCEPT
+$IPT -A INPUT  -p tcp -s $ADMIN_IP -d $FW_IP --dport 22 -j ACCEPT   # SSH na sam FW
+#  (FORWARD pravila za www/dns već su gore dodana – ne treba ih duplicirati)
 
 #
 # Pristup iz vanjske mreže u lokalnu LAN mrežu je zabranjen.
@@ -150,7 +148,7 @@ $IPT -A FORWARD -d $PRIVATE_NET ! -s $PRIVATE_NET -j DROP
 # i to samo sa cvora admin.
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A INPUT -p tcp --dport 22 -s $ADMIN_IP -j ACCEPT
+# (već dodano gore u INPUT lancu)
 
 #
 # Pristup svim ostalim uslugama (portovima) na cvoru FW je zabranjen.
