@@ -6,3 +6,102 @@ sudo himage client curl https://192.0.2.10 -- NE RADI, failed to connect to . po
 
 # Iz pc (lokalna mreža)
 sudo himage pc curl http://192.0.2.10 -- RADI
+
+
+2. Pristup DNS servisu na dns (53/tcp i 53/udp) iz Interneta i lokalne mreže
+# Iz client
+sudo himage client host www.example.com 192.0.2.20 -- NE RADI , communications error to 192.0.2.20#53 timed out
+
+# Iz pc
+sudo himage pc host www.example.com 192.0.2.20 -- NE RADI
+
+
+3. SSH na www i dns – dozvoljeno samo s admin
+# Iz admin – dozvoljeno
+sudo himage admin ssh 192.0.2.10 -- nema ispisa
+sudo himage admin ssh 192.0.2.20 -- nema ispisa
+
+# Iz pc – zabranjeno
+sudo himage pc ssh 192.0.2.10 -- nema ispisa
+
+
+4. www → pristup database na port 10000 i DNS prema Internetu
+# www prema database
+sudo himage www curl http://10.0.0.100:10000 -- failed to connect to 10.0.0.100 port 10000 after 1ms
+
+# www prema serveru (DNS test)
+sudo himage www host www.fer.hr 203.0.113.10 -- radi,  ispis:
+"Using domain server:
+Name 203.0.113.10
+Address: 203.0.113.10#53
+Aliases:
+Host www.fer.hr not found 3
+
+
+5. dns → DNS u Internet, sve ostalo zabranjeno
+# dns prema serveru
+sudo himage dns host www.fer.hr 203.0.113.10 -- NE RADi, ISPIS:  
+UDP setup with 203.0.113.10#53 for ww.fer.hr failed: network unreachable
+
+# dns prema www (nedozvoljeno!)
+sudo himage dns ssh 192.0.2.10 -- ok, ispis je connect to host 192.0.2.10 port 22: Netpwrk is unreachable
+
+6. Zabrani sve ostalo u DMZ
+# Iz client prema nepostojećem servisu na www
+sudo himage client telnet 192.0.2.10 23
+-- ispis je Trying 192.0.2.10 connection timed out
+
+
+
+7. SSH na database – dozvoljeno samo iz Private mreže
+# Iz pc
+sudo himage pc ssh 10.0.0.100 -- ne radi, ispis je connect to host 10.0.0.100 port 22: Network is unreachable
+
+# Iz client (Internet) – zabranjeno
+sudo himage client ssh 10.0.0.100 -isti ispis kao i gore, radi
+
+
+
+8. Web na portu 10000 na database – samo www i Private
+# Iz pc
+sudo himage pc curl http://10.0.0.100:10000 -- failed to connect to 10.0.0.100 port 10000 
+
+# Iz www
+sudo himage www curl http://10.0.0.100:10000 -- failed to connect to 10.0.0.100 port 10000
+
+# Iz client – zabranjeno
+sudo himage client curl http://10.0.0.100:10000 -- failed to connect to 10.0.0.100 port 10000
+
+
+
+9. database ne smije ništa moći prema Internetu ni DMZ
+# Iz database prema www (treba biti blokirano)
+sudo himage database curl http://192.0.2.10  -- failed to connect
+
+# Iz database prema server (Internet) – treba biti blokirano
+sudo himage database host www.fer.hr 203.0.113.10 --netpwrk unreachable
+
+
+
+10. Privatna mreža (osim database) može HTTP i DNS prema Internetu
+# Iz pc
+sudo himage pc curl http://www.fer.hr  --could not resolve hot www.fer.hr
+sudo himage pc host www.fer.hr 203.0.113.10 --communicatiosn error to 203.0.113.10#53 timed out
+
+# Iz database – ne bi smjelo raditi!
+sudo himage database curl http://www.fer.hr --could not resolve hot www.fer.hr
+
+
+11. Admin može SSH na www, dns i FWsudo himage 
+sudo himage admin ssh 192.0.2.10 --timeout
+sudo himage admin ssh 192.0.2.20  --timeout
+sudo himage admin ssh 10.0.0.1  # IP čvora FW
+
+
+
+
+
+
+
+
+

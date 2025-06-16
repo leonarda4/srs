@@ -120,10 +120,16 @@ $IPT -A FORWARD -s $DATABASE -j DROP
 # u Internetu ali samo korištenjem protokola HTTP (tcp/80 i tcp/443) i DNS (udp/53 i tcp/53).
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A FORWARD -s $PRIVATE_NET ! -s $DATABASE -p tcp --dport 80 -j ACCEPT
-$IPT -A FORWARD -s $PRIVATE_NET ! -s $DATABASE -p tcp --dport 443 -j ACCEPT
-$IPT -A FORWARD -s $PRIVATE_NET ! -s $DATABASE -p udp --dport 53 -j ACCEPT
-$IPT -A FORWARD -s $PRIVATE_NET ! -s $DATABASE -p tcp --dport 53 -j ACCEPT
+$IPT -A FORWARD -s $DATABASE -p tcp --dport 80 -j DROP
+$IPT -A FORWARD -s $DATABASE -p tcp --dport 443 -j DROP
+$IPT -A FORWARD -s $DATABASE -p udp --dport 53 -j DROP
+$IPT -A FORWARD -s $DATABASE -p tcp --dport 53 -j DROP
+
+$IPT -A FORWARD -s $PRIVATE_NET -p tcp --dport 80 -j ACCEPT
+$IPT -A FORWARD -s $PRIVATE_NET -p tcp --dport 443 -j ACCEPT
+$IPT -A FORWARD -s $PRIVATE_NET -p udp --dport 53 -j ACCEPT
+$IPT -A FORWARD -s $PRIVATE_NET -p tcp --dport 53 -j ACCEPT
+
 
 # Za potrebe administriranja, s admin se može pristupiti SSH poslužitljima na www i dns.
 #
