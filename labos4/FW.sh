@@ -154,4 +154,4 @@ $IPT -A FORWARD -d $PRIVATE_NET ! -s $PRIVATE_NET -j DROP
 # Pristup svim ostalim uslugama (portovima) na cvoru FW je zabranjen.
 #
 # <--- Dodajte pravila (ako je potrebno)
-$IPT -A INPUT -p tcp ! --dport 22 -j DROP
+$IPT -A INPUT -p tcp ! --dport 22 -j DROP 
