@@ -41,7 +41,7 @@ DNS=192.0.2.20
 SERVER=203.0.113.10
 DATABASE=10.0.0.100
 PRIVATE_NET=10.0.0.0/24
-ADMIN_IP=10.0.0.2
+ADMIN_IP=192.168.0.20
 FW_IP=10.0.0.1
 
 #
@@ -63,7 +63,7 @@ $IPT -A FORWARD -p tcp -d $DNS --dport 53 -j ACCEPT
 #  DNS poslužitelj u DMZ-u smije sam slati upite prema vanjskim DNS-ovima
 $IPT -A FORWARD -s $DNS -p udp --dport 53 -j ACCEPT
 $IPT -A FORWARD -s $DNS -p tcp --dport 53 -j ACCEPT
-$IPT -A FORWARD -s $DNS -j DROP          # ...a sve ostalo mu je zabranjeno
+$IPT -A FORWARD -s $DNS -j DROP          # sve ostalo mu je zabranjeno
 
 #
 # ... a SSH poslužiteljima na www i dns samo s admin iz lokalne mreže "Private"

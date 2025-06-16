@@ -10,10 +10,10 @@ sudo himage pc curl http://192.0.2.10 -- RADI
 
 2. Pristup DNS servisu na dns (53/tcp i 53/udp) iz Interneta i lokalne mreže
 # Iz client
-sudo himage client host www.example.com 192.0.2.20 -- NE RADI , communications error to 192.0.2.20#53 timed out
+sudo himage client host www.example.com 192.0.2.20 -- RADI
 
 # Iz pc
-sudo himage pc host www.example.com 192.0.2.20 -- NE RADI
+sudo himage pc host www.example.com 192.0.2.20 -- RADI
 
 
 3. SSH na www i dns – dozvoljeno samo s admin
@@ -40,11 +40,20 @@ Host www.fer.hr not found 3
 
 5. dns → DNS u Internet, sve ostalo zabranjeno
 # dns prema serveru
-sudo himage dns host www.fer.hr 203.0.113.10 -- NE RADi, ISPIS:  
-UDP setup with 203.0.113.10#53 for ww.fer.hr failed: network unreachable
+sudo himage dns host www.fer.hr 203.0.113.10 -- RADI, ispis:
+Using domain server:
+Name: 203.0.113.10
+Address: 203.0.113.10#53
+Aliases: 
+
+Host www.fer.hr not found : 3(NXDOMAIN)
 
 # dns prema www (nedozvoljeno!)
-sudo himage dns ssh 192.0.2.10 -- ok, ispis je connect to host 192.0.2.10 port 22: Netpwrk is unreachable
+sudo himage dns ssh 192.0.2.10 -- nije ok, IPIS:
+tHE AUTHENTICITY OF HOST 192.0.2.10 cant be established.
+This key is not known by any other names 
+Areyou sure you want to confinue yes no fingerprint
+Warning: permanently added to the list of known hosts
 
 6. Zabrani sve ostalo u DMZ
 # Iz client prema nepostojećem servisu na www
@@ -76,7 +85,7 @@ sudo himage client curl http://10.0.0.100:10000 -- failed to connect to 10.0.0.1
 
 9. database ne smije ništa moći prema Internetu ni DMZ
 # Iz database prema www (treba biti blokirano)
-sudo himage database curl http://192.0.2.10  -- failed to connect
+sudo himage database curl http://192.0.2.10  -- ispisuje se sadržaj datoteke
 
 # Iz database prema server (Internet) – treba biti blokirano
 sudo himage database host www.fer.hr 203.0.113.10 --netpwrk unreachable
@@ -95,7 +104,7 @@ sudo himage database curl http://www.fer.hr --could not resolve hot www.fer.hr
 11. Admin može SSH na www, dns i FWsudo himage 
 sudo himage admin ssh 192.0.2.10 --timeout
 sudo himage admin ssh 192.0.2.20  --timeout
-sudo himage admin ssh 10.0.0.1  # IP čvora FW
+sudo himage admin ssh 10.0.0.1  --  network is unreachable 
 
 
 
